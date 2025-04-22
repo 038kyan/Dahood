@@ -85,4 +85,63 @@ health_bg.BackgroundTransparency = 1
 health_bg.BorderSizePixel = 0
 health_bg.ZIndex = 2
 
-local health_bar = Instance.new
+local health_bar = Instance.new("Frame", health_bg)
+health_bar.Size = UDim2.new(1, 0, 1, 0)
+health_bar.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+health_bar.BorderSizePixel = 0
+health_bar.ZIndex = 3
+
+local armor_bg = Instance.new("Frame", target_frame)
+armor_bg.Size = UDim2.new(0.85, 0, 0, 8)
+armor_bg.Position = UDim2.new(0.05, 0, 0, 97)
+armor_bg.BackgroundTransparency = 1
+armor_bg.BorderSizePixel = 0
+armor_bg.ZIndex = 2
+
+local armor_bar = Instance.new("Frame", armor_bg)
+armor_bar.Size = UDim2.new(1, 0, 1, 0)
+armor_bar.BackgroundColor3 = Color3.fromRGB(0, 128, 255)
+armor_bar.BorderSizePixel = 0
+armor_bar.ZIndex = 3
+
+function module.update(target)
+    if target and target.Character and target.Character:FindFirstChild("Humanoid") then
+        local humanoid = target.Character.Humanoid
+        local bodyEffects = target.Character:FindFirstChild("BodyEffects")
+        local target_armor = bodyEffects and bodyEffects:FindFirstChild("Armor")
+        local health_ratio = math.clamp(humanoid.Health / humanoid.MaxHealth, 0, 1)
+        local armor = target_armor and math.floor(target_armor.Value) or 0
+        local max_armor = 130
+        local armor_ratio = math.clamp(armor / max_armor, 0, 1)
+
+        health_bar.Size = UDim2.new(health_ratio, 0, 1, 0)
+        health_bar.BackgroundColor3 = health_ratio > 0.5 and Color3.fromRGB(0, 255, 0)
+            or health_ratio > 0.2 and Color3.fromRGB(255, 165, 0)
+            or Color3.fromRGB(255, 0, 0)
+
+        armor_bar.Size = UDim2.new(armor_ratio, 0, 1, 0)
+
+        name_label.Text = target.DisplayName
+        username_label.Text = target.Name
+        user_id_label.Text = tostring(target.UserId)
+        profile_pic.Image = string.format("rbxthumb://type=AvatarHeadShot&id=%d&w=420&h=420", target.UserId)
+
+        copy_username_button.MouseButton1Click:Connect(function()
+            setclipboard(username_label.Text)
+        end)
+        
+        copy_user_id_button.MouseButton1Click:Connect(function()
+            setclipboard(user_id_label.Text)
+        end)
+
+        target_frame.Visible = true
+    else
+        target_frame.Visible = false
+    end
+end
+
+function module.destroy()
+    screen_gui:Destroy()
+end
+
+return module
