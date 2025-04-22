@@ -1,68 +1,55 @@
 local module = {}
 
-function module.clearTargetEffects(TARGET, OWNER, Player)
-    coroutine.wrap(function()
-        -- Disconnect all connections
-        for _, Connection in getgenv().TARGET_CONNETION do
-            Connection:Disconnect()
-        end
-        
-        -- Clear z markers
-        for _, v in pairs(Player:GetPlayers()) do
-            if v.Character and v.Character:FindFirstChild("z") then 
-                v.Character:FindFirstChild("z"):Destroy() 
-            end
-            if v.Character and v.Character:FindFirstChild("TargetOutline") then 
-                v.Character:FindFirstChild("TargetOutline"):Destroy() 
+module.clearTargetEffects = function(TARGET, OWNER, Player)
+    for _, Connection in pairs(getgenv().TARGET_CONNETION) do
+        Connection:Disconnect()
+    end
+    getgenv().TARGET_CONNETION = {}
+    
+    for _, v in pairs(Player:GetPlayers()) do
+        if v.Character then
+            for _, obj in pairs({"z", "TargetOutline"}) do
+                local found = v.Character:FindFirstChild(obj)
+                if found then found:Destroy() end
             end
         end
-        
-        -- Remove beams
-        for _, v in pairs(OWNER.Character:GetChildren()) do
-            if v:IsA("Beam") then
-                v:Destroy()
-            end
+    end
+    
+    for _, v in pairs(OWNER.Character:GetChildren()) do
+        if v:IsA("Beam") then v:Destroy() end
+    end
+    
+    for _, v in pairs(Player:GetPlayers()) do
+        if v.Character and v.Character.HumanoidRootPart then
+            local circle = v.Character.HumanoidRootPart:FindFirstChild("Circle")
+            if circle then circle:Destroy() end
         end
-        
-        -- Remove circles
-        for _, v in pairs(Player:GetPlayers()) do
-            if v.Character and v.Character.HumanoidRootPart:FindFirstChild("Circle") then 
-                v.Character.HumanoidRootPart:FindFirstChild("Circle"):Destroy() 
-            end
-        end
-    end)()
+    end
 end
 
-function module.setupTargetHighlights(TARGET, OWNER)
-    coroutine.wrap(function()
-        -- Create beam between player and target
-        local Beam = Instance.new("Beam", OWNER.Character)
-        Beam.Brightness = 9e9
-        Beam.Color = ColorSequence.new{
-            ColorSequenceKeypoint.new(0, Color3.fromRGB(255,255,255)),
-            ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255,255,255)),
-            ColorSequenceKeypoint.new(1, Color3.fromRGB(255,255,255))
-        }
-        Beam.LightEmission = 1
-        Beam.TextureMode = Enum.TextureMode.Wrap
-        Beam.TextureSpeed = .1
-        Beam.Attachment0 = OWNER.Character.UpperTorso.BodyBackAttachment
-        Beam.Attachment1 = TARGET.Character.UpperTorso.BodyBackAttachment
-        Beam.Width0 = .1
-        Beam.Width1 = .1
-        Beam.FaceCamera = true
-        
-        -- Create highlight outline
-        local highlight = Instance.new("Highlight", TARGET.Character)
-        highlight.Name = "TargetOutline"
-        highlight.OutlineTransparency = 0
-        highlight.FillTransparency = 1
-        highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
-        highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
-        
-        -- Add circle effect
-        Emitter(130036784222277, "Circle", getRoot_(TARGET), -2.5)
-    end)()
+module.setupTargetHighlights = function(TARGET, OWNER)
+    local Beam = Instance.new("Beam")
+    Beam.Parent = OWNER.Character
+    Beam.Brightness = 9e9
+    Beam.Color = ColorSequence.new(Color3.fromRGB(255,255,255))
+    Beam.LightEmission = 1
+    Beam.TextureMode = Enum.TextureMode.Wrap
+    Beam.TextureSpeed = .1
+    Beam.Attachment0 = OWNER.Character.UpperTorso.BodyBackAttachment
+    Beam.Attachment1 = TARGET.Character.UpperTorso.BodyBackAttachment
+    Beam.Width0 = .1
+    Beam.Width1 = .1
+    Beam.FaceCamera = true
+    
+    local highlight = Instance.new("Highlight")
+    highlight.Parent = TARGET.Character
+    highlight.Name = "TargetOutline"
+    highlight.OutlineTransparency = 0
+    highlight.FillTransparency = 1
+    highlight.OutlineColor = Color3.fromRGB(255,255,255)
+    highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+    
+    Emitter(130036784222277, "Circle", getRoot_(TARGET), -2.5)
 end
 
 return module
