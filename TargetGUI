@@ -1,0 +1,149 @@
+local module = {}
+
+-- Services
+local players_service = game:GetService("Players")
+local run_service = game:GetService("RunService")
+
+-- GUI Elements
+local screen_gui = Instance.new("ScreenGui")
+screen_gui.Parent = game.CoreGui
+
+local target_frame = Instance.new("Frame", screen_gui)
+target_frame.Size = UDim2.new(0, 280, 0, 120)
+target_frame.Position = UDim2.new(0.5, -140, 0.95, -222.8)
+target_frame.BackgroundTransparency = 0.2
+target_frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+target_frame.BorderSizePixel = 0
+target_frame.Visible = false
+target_frame.Active = true
+target_frame.Draggable = false
+target_frame.ClipsDescendants = true
+target_frame.ZIndex = 1
+
+local corner_main = Instance.new("UICorner", target_frame)
+corner_main.CornerRadius = UDim.new(0, 15)
+
+local profile_pic = Instance.new("ImageLabel", target_frame)
+profile_pic.Size = UDim2.new(0, 59, 0, 59)
+profile_pic.Position = UDim2.new(0, 15, 0, 15)
+profile_pic.BackgroundTransparency = 1
+profile_pic.BorderSizePixel = 0
+profile_pic.Image = "rbxthumb://type=AvatarHeadShot&id=0&w=420&h=420"
+profile_pic.ZIndex = 2
+
+local corner_pic = Instance.new("UICorner", profile_pic)
+corner_pic.CornerRadius = UDim.new(0, 10)
+
+local name_label = Instance.new("TextLabel", target_frame)
+name_label.Size = UDim2.new(0.65, 0, 0, 18)
+name_label.Position = UDim2.new(0, 85, 0, 12)
+name_label.BackgroundTransparency = 1
+name_label.TextColor3 = Color3.fromRGB(255, 255, 255)
+name_label.Font = Enum.Font.GothamBold
+name_label.TextSize = 18
+name_label.TextXAlignment = Enum.TextXAlignment.Left
+name_label.ZIndex = 2
+
+local username_label = Instance.new("TextLabel", target_frame)
+username_label.Size = UDim2.new(0.8, 0, 0, 16)
+username_label.Position = UDim2.new(0, 85, 0, 35)
+username_label.BackgroundTransparency = 1
+username_label.TextColor3 = Color3.fromRGB(200, 200, 200)
+username_label.Font = Enum.Font.Gotham
+username_label.TextSize = 14
+username_label.TextXAlignment = Enum.TextXAlignment.Left
+username_label.ZIndex = 2
+
+local user_id_label = Instance.new("TextLabel", target_frame)
+user_id_label.Size = UDim2.new(0.85, 0, 0, 14)
+user_id_label.Position = UDim2.new(0.135, 49, 0, 56)
+user_id_label.BackgroundTransparency = 1
+user_id_label.TextColor3 = Color3.fromRGB(200, 200, 200)
+user_id_label.Font = Enum.Font.Gotham
+user_id_label.TextSize = 12
+user_id_label.TextXAlignment = Enum.TextXAlignment.Left
+user_id_label.ZIndex = 2
+
+local copy_username_button = Instance.new("ImageButton", target_frame)
+copy_username_button.Size = UDim2.new(0, 14, 0, 14)
+copy_username_button.Position = UDim2.new(0, 250, 0, 35)
+copy_username_button.BackgroundTransparency = 1
+copy_username_button.Image = "rbxassetid://10542635446"
+copy_username_button.ZIndex = 3
+
+local copy_user_id_button = Instance.new("ImageButton", target_frame)
+copy_user_id_button.Size = UDim2.new(0, 14, 0, 14)
+copy_user_id_button.Position = UDim2.new(0, 250, 0, 55)
+copy_user_id_button.BackgroundTransparency = 1
+copy_user_id_button.Image = "rbxassetid://10542635446"
+copy_user_id_button.ZIndex = 3
+
+local health_bg = Instance.new("Frame", target_frame)
+health_bg.Size = UDim2.new(0.85, 0, 0, 8)
+health_bg.Position = UDim2.new(0.05, 0, 0, 85)
+health_bg.BackgroundTransparency = 1
+health_bg.BorderSizePixel = 0
+health_bg.ZIndex = 2
+
+local health_bar = Instance.new("Frame", health_bg)
+health_bar.Size = UDim2.new(1, 0, 1, 0)
+health_bar.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+health_bar.BorderSizePixel = 0
+health_bar.ZIndex = 3
+
+local armor_bg = Instance.new("Frame", target_frame)
+armor_bg.Size = UDim2.new(0.85, 0, 0, 8)
+armor_bg.Position = UDim2.new(0.05, 0, 0, 97)
+armor_bg.BackgroundTransparency = 1
+armor_bg.BorderSizePixel = 0
+armor_bg.ZIndex = 2
+
+local armor_bar = Instance.new("Frame", armor_bg)
+armor_bar.Size = UDim2.new(1, 0, 1, 0)
+armor_bar.BackgroundColor3 = Color3.fromRGB(0, 128, 255)
+armor_bar.BorderSizePixel = 0
+armor_bar.ZIndex = 3
+
+-- Module functions
+function module.update(target)
+    if target and target.Character and target.Character:FindFirstChild("Humanoid") then
+        local humanoid = target.Character.Humanoid
+        local bodyEffects = target.Character:FindFirstChild("BodyEffects")
+        local target_armor = bodyEffects and bodyEffects:FindFirstChild("Armor")
+        local health_ratio = math.clamp(humanoid.Health / humanoid.MaxHealth, 0, 1)
+        local armor = target_armor and math.floor(target_armor.Value) or 0
+        local max_armor = 130
+        local armor_ratio = math.clamp(armor / max_armor, 0, 1)
+
+        health_bar.Size = UDim2.new(health_ratio, 0, 1, 0)
+        health_bar.BackgroundColor3 = health_ratio > 0.5 and Color3.fromRGB(0, 255, 0)
+            or health_ratio > 0.2 and Color3.fromRGB(255, 165, 0)
+            or Color3.fromRGB(255, 0, 0)
+
+        armor_bar.Size = UDim2.new(armor_ratio, 0, 1, 0)
+
+        name_label.Text = target.DisplayName
+        username_label.Text = target.Name
+        user_id_label.Text = tostring(target.UserId)
+        profile_pic.Image = string.format("rbxthumb://type=AvatarHeadShot&id=%d&w=420&h=420", target.UserId)
+
+        target_frame.Visible = true
+        
+        -- Setup copy buttons
+        copy_username_button.MouseButton1Click:Connect(function()
+            setclipboard(username_label.Text)
+        end)
+        
+        copy_user_id_button.MouseButton1Click:Connect(function()
+            setclipboard(user_id_label.Text)
+        end)
+    else
+        target_frame.Visible = false
+    end
+end
+
+function module.destroy()
+    screen_gui:Destroy()
+end
+
+return module
